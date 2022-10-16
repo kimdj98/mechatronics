@@ -1,0 +1,6 @@
+# ide cache file
+.idea
+
+# project file in local
+CMakeLists.txt
+cmake-build-debug
