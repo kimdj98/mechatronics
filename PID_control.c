@@ -91,7 +91,7 @@ float get_position()
 	return redGearPosition;
 }
 
-void MOVING_MOTOR(float actu_signal) // int형으로 어떻게 바꾸나?????
+void MOVING_MOTOR(float actu_signal) // integer signal?
 {
 	if (actu_signal > 0)
 	{
