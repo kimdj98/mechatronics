@@ -156,7 +156,7 @@ double PID_Control(int reference, float Pgain, float Igain, float Dgain)
 		itae += (inner_endTime - startTime) / 1000 * fabs(error) * T;
 
 		unsigned int endtime = millis();
-		if (endtime - startTime >= 7000) // perform pid control for 7 seconds
+		if (endtime - startTime >= 4000) // perform pid control for 7 seconds
 		{
 			softPwmWrite(MOTOR1, 0);
 			softPwmWrite(MOTOR2, 0);
@@ -187,9 +187,11 @@ void PID_Tuning(int reference, char mode, int iteration, float diff ,float Pgain
                     min_Dgain = Dgain;
                 }
                 Pgain += diff;
+                encoderPosition = 0;
+                redGearPosition = 0.0;
             }
             printf("==================================================\n");
-            printf("minimum itae: %lf (Pgain: %f, Dgain: %f, Igain: %f\n");
+            printf("minimum itae: %lf (Pgain: %f, Igain: %f, Dgain: %f\n", min_itae, min_Pgain, min_Igain, min_Dgain);
             break;
         case 'I' :
             printf("Tuning I_gain\n");
