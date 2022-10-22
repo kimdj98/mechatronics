@@ -96,10 +96,12 @@ int main()
 //#################     tuning code     ########################
     printf("Enter mode for tuning: ");
     scanf("%c", &mode);
-    printf("Enter Pgain, Igain, Dgain");
+    printf("Enter Pgain, Igain, Dgain: ");
     scanf("%f %f %f", &Pgain, &Igain, &Dgain);
     printf("Enter number of iterations:");
     scanf("%d", &iterations);
+    printf("Enter reference: ");
+    scanf("%d", &reference);
     printf("Enter difference between %c gains", mode);
     scanf("%f", &diff);
     PID_Tuning(reference, mode, iterations, diff, Pgain, Igain, Dgain);
