@@ -8,6 +8,7 @@
 #define ENC2REDGEAR 216
 #define MOTOR1 19
 #define MOTOR2 26
+#define PULSE 21
 
 int encA;
 int encB;
@@ -119,7 +120,7 @@ int main()
 
 	}
 
-	for (int i = 0; i < (sizeof(ERROR) / sizeof(float)), i++)
+	for (int i = 0; i < (sizeof(ERROR) / sizeof(float)); i++)
 	{
 		printf("%f\t%f", ERROR[i], ITAE[i]);
 	}	
