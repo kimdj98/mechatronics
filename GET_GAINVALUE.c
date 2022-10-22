@@ -35,7 +35,7 @@ void funENCODER_A()
 	}
 
 	redGearPosition = ((float)encoderPosition) / ENC2REDGEAR;
-	printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
+//	printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition); // uncomment this to see motor position
 }
 
 
@@ -59,14 +59,13 @@ void funENCODER_B()
 			encoderPosition--;
 	}
 	redGearPosition = ((float)encoderPosition) / ENC2REDGEAR;
-	printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
+//	printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition); // uncomment this to see motor position
 
 }
 
 void set_amplifer(float m, float error);
-void PID_Control(int reference, int Pgain, int Igain, int Dgain, double* itae, float ERROR[], float ITAE[]);
-
-
+double PID_Control(int reference, float Pgain, float Igain, float Dgain);
+void PID_Tuning(int reference, char mode, int iteration, float diff ,float Pgain, float Igain, float Dgain);
 int main()
 {
 	wiringPiSetupGpio();
@@ -84,6 +83,8 @@ int main()
 	float Igain;
 	float Dgain;
 
+    char mode; // tuning mode selection
+    float diff; // tuning difference between gains
 	int number_case=0;
 
 	softPwmCreate(MOTOR1, 0, 100);
@@ -92,61 +93,42 @@ int main()
 	wiringPiISR(ENCODER_A, INT_EDGE_BOTH, funENCODER_A);
 	wiringPiISR(ENCODER_B, INT_EDGE_BOTH, funENCODER_B);
 
-	printf("Enter the number of iterations\n");
-	scanf("%d", &iterations);
+//#################     tuning code     ########################
+    printf("Enter mode for tuning: ");
+    scanf("%c", &mode);
+    printf("Enter Pgain, Igain, Dgain");
+    scanf("%f %f %f", &Pgain, &Igain, &Dgain);
+    printf("Enter number of iterations:");
+    scanf("%d", &iterations);
+    printf("Enter difference between %c gains", mode);
+    scanf("%f", &diff);
+    PID_Tuning(reference, mode, iterations, diff, Pgain, Igain, Dgain);
 
-	for (int D = 0; D <= 20; D++)
-	{
-		Dgain = D;
-		for (int I = 0; I < 20; I++)
-		{
-			Igain = I * 0.1;
-			for (int P = 1; P <= 20; P++)
-			{
-				Pgain = P * 50;
+//#################     project code     ########################
+//    printf("Enter the reference position\n");
+//    scanf("%d", &reference);
+//    PID_Control(reference, Pgain, Igain, Dgain);
+//    printf("measured itae(iteration: %d): %f\n", i + 1, itae); // iteration term i
 
-				for (int i = 0; i < iterations; i++)
-				{
-					
-					printf("Enter the reference position\n");
-					scanf("%d", &reference);
-					PID_Control(reference, Pgain, Igain, Dgain, &itae,ERROR,number_case);
-					printf("measured itae(iteration: %d): %f\n", i + 1, itae);
-					number_case++;
-				}
-
-			}
-		}
-
-	}
-
-	for (int i = 0; i < (sizeof(ERROR) / sizeof(float)); i++)
-	{
-		printf("%f\t%f", ERROR[i], ITAE[i]);
-	}	
-
-	return 0;
+    return 0;
 }
 
 
 
-void PID_Control(int reference, int Pgain, int Igain, int Dgain, double* itae,float ERROR[],float ITAE[],int number_case)
+double PID_Control(int reference, float Pgain, float Igain, float Dgain)
 {
-
 	float m = 0;
 	float m1 = 0;
 	float error = 0;
 	float curr_pos = 0;
 	float error_1 = 0, error_2 = 0;
 	float T = 0.01;
-
+    double itae = 0;
 	float G1 = (Pgain + Igain * T + Dgain / T);
 	float G2 = -(Pgain + 2 * Dgain / T);
 	float G3 = Dgain / T;
 
 	unsigned int startTime = millis();
-
-
 	while (1)
 	{
 		unsigned int inner_startTime = millis();
@@ -171,22 +153,53 @@ void PID_Control(int reference, int Pgain, int Igain, int Dgain, double* itae,fl
 		{
 			inner_endTime = millis();
 		}
-		*itae += (inner_endTime - startTime) / 1000 * fabs(error) * T;
+		itae += (inner_endTime - startTime) / 1000 * fabs(error) * T;
 
 		unsigned int endtime = millis();
-		if (endtime - startTime >= 7000)
+		if (endtime - startTime >= 7000) // perform pid control for 7 seconds
 		{
 			softPwmWrite(MOTOR1, 0);
 			softPwmWrite(MOTOR2, 0);
-			printf("PID CONTROL FINISH\n");
-			ERROR[number_case] = error;
-			ITAE[number_case] = *itae;
+//			printf("PID CONTROL FINISH\n");
+            printf("itae: %lf\n", itae);
 			break;
 		}
 
 	}
+    return itae;
+}
 
-
+void PID_Tuning(int reference, char mode, int iteration, float diff ,float Pgain, float Igain, float Dgain) {
+    float min_itae = 1e+20; // infinity
+    float min_Pgain = 0.0;
+    float min_Igain = 0.0;
+    float min_Dgain = 0.0;
+    switch(mode){
+        case 'P' :
+            printf("Tuning P_gain\n");
+            for (int i = 0; i < iteration; i++) {
+                double itae = PID_Control(reference, Pgain, Igain, Dgain);
+                // csv.write(Pgain, Igain, Dgain, itae);
+                if (itae < min_itae) {
+                    min_itae = itae;
+                    min_Pgain = Pgain;
+                    min_Igain = Igain;
+                    min_Dgain = Dgain;
+                }
+                Pgain += diff;
+            }
+            printf("==================================================\n");
+            printf("minimum itae: %lf (Pgain: %f, Dgain: %f, Igain: %f\n");
+            break;
+        case 'I' :
+            printf("Tuning I_gain\n");
+            break;
+        case 'D' :
+            printf("Tuning D_gain\n");
+            break;
+        default :
+            printf("mode should be in between {P, I, D}.\n");
+    }
 }
 
 
