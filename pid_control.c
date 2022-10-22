@@ -13,6 +13,7 @@
 #define MOTOR1 19
 #define MOTOR2 26
 
+
 int encA;
 int encB;
 int encoderPosition = 0;
@@ -24,33 +25,33 @@ void funENCODER_A()
     encB = digitalRead(ENCODER_B);
     if (encA == HIGH)
     {
-        if (enB == LOW)
+        if (encB == LOW)
         {
             encoderPosition++;
-            printf("A:rising B:%d\n", encB);
+            // printf("A:rising B:%d\n", encB);
         }
         else
         {
             encoderPosition--;
-            printf("A:rising B:%d\n", encB);
+            // printf("A:rising B:%d\n", encB);
         }
     }
     else
     {
-        if (enB == LOW)
+        if (encB == LOW)
         {
             encoderPosition--;
-            printf("A:falling B:%d\n", encB);
+            // printf("A:falling B:%d\n", encB);
         }
         else
         {
             encoderPosition++;
-            printf("A:falling B:%d\n", encB);
+            // printf("A:falling B:%d\n", encB);
         }
     }
 
     redGearPosition = (float)encoderPosition / ENC2REDGEAR;
-    printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
+    // printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
 
 }
 
@@ -60,33 +61,33 @@ void funENCODER_B()
     encB = digitalRead(ENCODER_B);
     if (encB == HIGH)
     {
-        if (enA == LOW)
+        if (encA == LOW)
         {
             encoderPosition--;
-            printf("A:%d B:rising\n", encA);
+            // printf("A:%d B:rising\n", encA);
         }
         else
         {
             encoderPosition++;
-            printf("A:%d B:rising\n", encA);
+           // printf("A:%d B:rising\n", encA);
         }
     }
     else
     {
-        if (enA == LOW)
+        if (encA == LOW)
         {
             encoderPosition++;
-            printf("A:%d B:falling\n", encA);
+            // printf("A:%d B:falling\n", encA);
         }
         else
         {
             encoderPosition++;
-            printf("A:%d B:falling\n", encA);
+            // printf("A:%d B:falling\n", encA);
         }
     }
 
     redGearPosition = (float)encoderPosition / ENC2REDGEAR;
-    printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
+    // printf("funcEncoder_A Result: encPos:%d gearPos:%f\n", encoderPosition, redGearPosition);
 
 }
 
@@ -106,11 +107,11 @@ void set_amplifier(float actu_signal) // integer signal?
     else
     {
         softPwmWrite(MOTOR1, 0);
-        softPWmWrite(MOTOR2, -actu_signal);
+        softPwmWrite(MOTOR2, -actu_signal);
     }
 }
 // function prototypes
-void pid_control(int reference, int Pgain, int Igain, int Dgain, float T, float* itae);
+void pid_control(int reference, float Pgain, float Igain, float Dgain, float T, float* itae);
 int main() {
 
     wiringPiSetupGpio();
@@ -121,9 +122,9 @@ int main() {
     wiringPiISR(ENCODER_B, INT_EDGE_BOTH, funENCODER_B);
 
     // tuning gains Pgain, Igain, Dgain
-    int Pgain = 100;
-    int Igain = 10;
-    int Dgain = 1;
+    float Pgain = 100;
+    float Igain = 10;
+    float Dgain = 1;
 
     float T = 1e-3; // sampling time (in sec)
 
@@ -144,12 +145,12 @@ int main() {
     return 0;
 }
 
-void pid_control(int reference, int Pgain, int Igain, int Dgain, float T, float* itae) { // get variables by reference
+void pid_control(int reference, float Pgain, float Igain, float Dgain, float T, float* itae) { // get variables by reference
     float m, m1=0, e, e1=0, e2=0; // declare variable for ms and errors
     float G1, G2, G3; // coefficients for e_n, e_(n-1), e_(n-2)
     float c;
     // setting coefficients for e_n, e_(n-1), e_(n-2)
-    G1 = ((float)Pgain + (float)Igain *T + (float)Dgain / T);
+    G1 = ((float)Pgain + (float)Igain * T + (float)Dgain / T);
     G2 = -((float)Pgain + 2 * (float)Dgain / T);
     G3 = ((float)Dgain)/T;
 
@@ -170,7 +171,10 @@ void pid_control(int reference, int Pgain, int Igain, int Dgain, float T, float*
         } // delay
         *itae += (endTime - startTime) * abs(e) * T;
 
-        if ((e-e1) < 1e-10 && (e-e2) < 1e-10) // break while loop if steady state error occured
+        if ((e-e1) == 0  && (e-e2) == 0) {// break while loop if steady state error occured
+            softPwmWrite(MOTOR1, 0);
+            softPwmWrite(MOTOR2, 0);
             break;
+        }
     }
 }
