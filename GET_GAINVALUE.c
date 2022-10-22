@@ -10,6 +10,8 @@
 #define MOTOR2 26
 #define PULSE 21
 
+FILE* fpt;
+
 int encA;
 int encB;
 int encoderPosition = 0;
@@ -104,14 +106,22 @@ int main()
     scanf("%d", &reference);
     printf("Enter difference between %c gains", mode);
     scanf("%f", &diff);
+    fpt = fopen("gain_table.csv", "w+");
+    fprintf(fpt, "ITAE,Pgain,Igain,Dgain\n");
     PID_Tuning(reference, mode, iterations, diff, Pgain, Igain, Dgain);
 
+    fclose(fpt);
+
 //#################     project code     ########################
+    printf("Enter number of iterations");
+
+    if
 //    printf("Enter the reference position\n");
 //    scanf("%d", &reference);
 //    PID_Control(reference, Pgain, Igain, Dgain);
 //    printf("measured itae(iteration: %d): %f\n", i + 1, itae); // iteration term i
-
+    softPwmWrite(MOTOR1, 0);
+    softPwmWrite(MOTOR2, 0);
     return 0;
 }
 
@@ -176,12 +186,13 @@ void PID_Tuning(int reference, char mode, int iteration, float diff ,float Pgain
     float min_Pgain = 0.0;
     float min_Igain = 0.0;
     float min_Dgain = 0.0;
+
     switch(mode){
         case 'P' :
             printf("Tuning P_gain\n");
             for (int i = 0; i < iteration; i++) {
                 double itae = PID_Control(reference, Pgain, Igain, Dgain);
-                // csv.write(Pgain, Igain, Dgain, itae);
+                fprintf(fpt, "%f, %f, %f, %f\n",itae,Pgain,Igain,Dgain);
                 if (itae < min_itae) {
                     min_itae = itae;
                     min_Pgain = Pgain;
@@ -197,9 +208,39 @@ void PID_Tuning(int reference, char mode, int iteration, float diff ,float Pgain
             break;
         case 'I' :
             printf("Tuning I_gain\n");
+            for (int i = 0; i < iteration; i++) {
+                double itae = PID_Control(reference, Pgain, Igain, Dgain);
+                fprintf(fpt, "%f, %f, %f, %f\n",itae,Pgain,Igain,Dgain);
+                if (itae < min_itae) {
+                    min_itae = itae;
+                    min_Pgain = Pgain;
+                    min_Igain = Igain;
+                    min_Dgain = Dgain;
+                }
+                Igain += diff;
+                encoderPosition = 0;
+                redGearPosition = 0.0;
+            }
+            printf("==================================================\n");
+            printf("minimum itae: %lf (Pgain: %f, Igain: %f, Dgain: %f\n", min_itae, min_Pgain, min_Igain, min_Dgain);
             break;
         case 'D' :
             printf("Tuning D_gain\n");
+            for (int i = 0; i < iteration; i++) {
+                double itae = PID_Control(reference, Pgain, Igain, Dgain);
+                fprintf(fpt, "%f, %f, %f, %f\n",itae,Pgain,Igain,Dgain);
+                if (itae < min_itae) {
+                    min_itae = itae;
+                    min_Pgain = Pgain;
+                    min_Igain = Igain;
+                    min_Dgain = Dgain;
+                }
+                Dgain += diff;
+                encoderPosition = 0;
+                redGearPosition = 0.0;
+            }
+            printf("==================================================\n");
+            printf("minimum itae: %lf (Pgain: %f, Igain: %f, Dgain: %f\n", min_itae, min_Pgain, min_Igain, min_Dgain);
             break;
         default :
             printf("mode should be in between {P, I, D}.\n");
