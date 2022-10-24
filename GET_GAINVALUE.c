@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <math.h>
@@ -113,14 +114,24 @@ int main()
 //#################     project code     ########################
     printf("Enter number of iterations");
     scanf("%d", test_iteration);
-    for (int i = 0; i < test_iteration; i ++) {
+
+    int* references = malloc(sizeof(int) * test_iteration);
+
+    if (references == NULL) {
+        printf("malloc error");
+    }
+
+    for (int i = 0; i < test_iteration; i++) {
+        printf("Enter reference number %d: ", i+1);
+        scanf("%d", references[i]);
+    }
+
+    for (int i = 0; i < test_iteration; i++) {
         while(1)
         {
             pulse = digitalRead(PULSE);
             if (pulse == HIGH) {
-                printf("Enter reference:");
-                scanf("%d", test_reference);
-                itae += PID_Control(test_reference, Pgain, Igain, Dgain); // cumulate itae for each iteration
+                itae += PID_Control(references[i], Pgain, Igain, Dgain); // cumulate itae for each iteration
                 printf("itae(iteration: %d): %f\n", i, itae);
                 break;
             }
@@ -128,9 +139,13 @@ int main()
     }
     printf("total performance(itae): %f\n", itae);
 
+    free(references);
+//################     project code ends     #####################
+
     softPwmWrite(MOTOR1, 0);
     softPwmWrite(MOTOR2, 0);
     return 0;
+//################    stop motor1, 2     #########################
 }
 
 
