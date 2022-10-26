@@ -118,7 +118,7 @@ int main()
     int references[10] = {0,};
 
     for (int i = 0; i < test_iteration; i++) {
-        printf("Enter reference number %d: ", i+1);
+        printf("Enter reference number: %d", i+1);
         scanf("%d", &references[i]);
     }
 
