@@ -115,15 +115,11 @@ int main()
     printf("Enter number of iterations");
     scanf("%d", test_iteration);
 
-    int* references = malloc(sizeof(int) * test_iteration);
-
-    if (references == NULL) {
-        printf("malloc error");
-    }
+    int references[10] = {0,};
 
     for (int i = 0; i < test_iteration; i++) {
         printf("Enter reference number %d: ", i+1);
-        scanf("%d", references[i]);
+        scanf("%d", &references[i]);
     }
 
     for (int i = 0; i < test_iteration; i++) {
@@ -139,7 +135,6 @@ int main()
     }
     printf("total performance(itae): %f\n", itae);
 
-    free(references);
 //################     project code ends     #####################
 
     softPwmWrite(MOTOR1, 0);
