@@ -112,7 +112,7 @@ int main()
 //    fclose(fpt);
 
 //#################     project code     ########################
-    printf("Enter number of iterations");
+    printf("Enter number of iterations: ");
     scanf("%d", &test_iteration);
 
     int references[10] = {0,};
