@@ -23,9 +23,9 @@ int tuning_iteration = 10;
 int tuning_reference = 5;
 
 char mode = 'P';
-float Pgain = 100;
-float Igain = 1;
-float Dgain = 0.1;
+float Pgain = 650;
+float Igain = 2;
+float Dgain = 4.5;
 float delta = 1;
 char file_name[] = "P_P100_I1_D1e-1_d1";
 //##################### configuration ends ####################
@@ -100,20 +100,20 @@ int main()
     int pulse = 0; // pulse variable
 
 //#################     tuning code     ########################
-    printf("mode: %c\n", mode);
-    printf("Pgain: %f, Igain: %f, Dgain: %f\n", Pgain, Igain, Dgain);
-    printf("delta %c: %f\n", mode, delta);
-    printf("reference: %f\n", tuning_reference);
-    printf("iteration: %f\n", tuning_iteration);
-    fpt = fopen(file_name, "w+");
-    fprintf(fpt, "ITAE,Pgain,Igain,Dgain\n");
-    PID_Tuning(tuning_reference, mode, tuning_iteration, delta, Pgain, Igain, Dgain);
-
-    fclose(fpt);
+//    printf("mode: %c\n", mode);
+//    printf("Pgain: %f, Igain: %f, Dgain: %f\n", Pgain, Igain, Dgain);
+//    printf("delta %c: %f\n", mode, delta);
+//    printf("reference: %f\n", tuning_reference);
+//    printf("iteration: %f\n", tuning_iteration);
+//    fpt = fopen(file_name, "w+");
+//    fprintf(fpt, "ITAE,Pgain,Igain,Dgain\n");
+//    PID_Tuning(tuning_reference, mode, tuning_iteration, delta, Pgain, Igain, Dgain);
+//
+//    fclose(fpt);
 
 //#################     project code     ########################
     printf("Enter number of iterations");
-    scanf("%d", test_iteration);
+    scanf("%d", &test_iteration);
 
     int references[10] = {0,};
 
