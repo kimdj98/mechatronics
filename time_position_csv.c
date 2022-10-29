@@ -127,7 +127,7 @@ int main()
         }
     }
     printf("total performance(itae): %f\n", itae);
-
+    fclose(fpt);
 //################     time_position csv code ends     #####################
 
     softPwmWrite(MOTOR1, 0);
